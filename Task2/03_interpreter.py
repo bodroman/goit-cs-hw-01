@@ -118,4 +118,51 @@ class Parser:
         raise ParsingError("Помилка синтаксичного аналізу")
 
     def eat(self, token_type):
-        """Порівнюємо поточний токен з очікуваним токеном і, якщо вони збігаються"""
+        """Порівнюємо поточний токен з очікуваним токеном і, якщо вони збігаються""" 
+
+
+class Interpreter:
+    def __init__(self, parser):
+        self.parser = parser
+
+    def visit(self, node):
+        """Відвідуємо вузол AST і виконуємо відповідну операцію."""
+        if isinstance(node, BinOp):
+            return self.visit_bin_op(node)
+        elif isinstance(node, Num):
+            return self.visit_num(node)
+        else:
+            raise Exception("Невідомий вузол")
+
+    def visit_bin_op(self, node):
+        """Обробка бінарних операцій."""
+        if node.op.type == TokenType.PLUS:
+            return self.visit(node.left) + self.visit(node.right)
+        elif node.op.type == TokenType.MINUS:
+            return self.visit(node.left) - self.visit(node.right)
+        elif node.op.type == TokenType.MUL:
+            return self.visit(node.left) * self.visit(node.right)
+        elif node.op.type == TokenType.DIV:
+            return self.visit(node.left) / self.visit(node.right)
+
+    def visit_num(self, node):
+        """Обробка чисел."""
+        return node.value
+
+    def interpret(self):
+        """Початок інтерпретації з кореня AST."""
+        tree = self.parser.parse()
+        return self.visit(tree)
+
+
+def main():
+    text = "3 + 5 * (2 - 8)"
+    lexer = Lexer(text)
+    parser = Parser(lexer)
+    interpreter = Interpreter(parser)
+    result = interpreter.interpret()
+    print(result)
+
+
+if __name__ == "__main__":
+    main()
